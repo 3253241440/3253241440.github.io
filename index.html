@@ -1,84 +1,104 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的网站</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-        header {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-        }
-        nav {
-            background-color: #f4f4f4;
-            padding: 1rem;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-        nav a {
-            text-decoration: none;
-            color: #333;
-        }
-        nav a:hover {
-            color: #007BFF;
-        }
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>贪吃蛇游戏</title>
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    canvas {
+      background: #000;
+      border: 2px solid #fff;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>欢迎访问我的网站</h1>
-    </header>
-    <nav>
-        <ul>
-            <li><a href="#home">首页</a></li>
-            <li><a href="#about">关于</a></li>
-            <li><a href="#contact">联系</a></li>
-        </ul>
-    </nav>
-    <div class="container">
-        <section id="home">
-            <h2>首页</h2>
-            <p>这是一个简单的网站示例，展示基本的 HTML 结构和 CSS 样式。</p>
-        </section>
-        <section id="about">
-            <h2>关于</h2>
-            <p>我们致力于提供高质量的网页内容，欢迎探索更多！</p>
-        </section>
-        <section id="contact">
-            <h2>联系</h2>
-            <p>邮箱：example@email.com</p>
-            <p>电话：123-456-7890</p>
-        </section>
-    </div>
-    <footer>
-        <p>&copy; 2025 我的网站。保留所有权利。</p>
-    </footer>
+  <canvas id="game" width="400" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const box = 20;
+    const canvasSize = 400;
+    const rows = canvasSize / box;
+    const cols = canvasSize / box;
+
+    let snake = [{ x: 9 * box, y: 9 * box }];
+    let direction = null;
+    let food = randomFood();
+    let score = 0;
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+      else if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+      else if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+      else if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+    });
+
+    function randomFood() {
+      return {
+        x: Math.floor(Math.random() * cols) * box,
+        y: Math.floor(Math.random() * rows) * box,
+      };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+      // 画蛇
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? '#0f0' : '#0a0';
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      // 画食物
+      ctx.fillStyle = '#f00';
+      ctx.fillRect(food.x, food.y, box, box);
+
+      // 移动蛇头
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+
+      if (direction === 'UP') headY -= box;
+      else if (direction === 'DOWN') headY += box;
+      else if (direction === 'LEFT') headX -= box;
+      else if (direction === 'RIGHT') headX += box;
+      else return; // 如果未开始移动，不更新
+
+      // 游戏结束判定
+      if (
+        headX < 0 || headX >= canvasSize ||
+        headY < 0 || headY >= canvasSize ||
+        snake.some(segment => segment.x === headX && segment.y === headY)
+      ) {
+        alert('游戏结束！得分：' + score);
+        snake = [{ x: 9 * box, y: 9 * box }];
+        direction = null;
+        food = randomFood();
+        score = 0;
+        return;
+      }
+
+      // 吃食物
+      if (headX === food.x && headY === food.y) {
+        food = randomFood();
+        score++;
+      } else {
+        snake.pop(); // 不吃食物就删掉尾巴
+      }
+
+      snake.unshift({ x: headX, y: headY });
+    }
+
+    setInterval(draw, 120);
+  </script>
 </body>
 </html>
